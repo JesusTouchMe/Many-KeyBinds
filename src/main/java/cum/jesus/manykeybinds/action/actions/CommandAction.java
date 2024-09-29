@@ -7,18 +7,7 @@ import cum.jesus.manykeybinds.ManyKeyBinds;
 import cum.jesus.manykeybinds.action.Action;
 import cum.jesus.manykeybinds.util.ChatUtils;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.CommandEvent;
 import org.lwjgl.input.Keyboard;
-
-import static net.minecraft.util.EnumChatFormatting.RED;
 
 public final class CommandAction extends Action {
     private String command;
@@ -41,42 +30,9 @@ public final class CommandAction extends Action {
         ChatUtils.sendMessage(id + " - Command \"/" + command + " " + String.join(" ", args) + "\"");
     }
 
-    /**
-     * Basic copy of {@link ClientCommandHandler#executeCommand(ICommandSender, String)}
-     */
     @Override
     public void run() {
-        ICommand icommand = ClientCommandHandler.instance.getCommands().get(command);
-
-        if (icommand == null) {
-            return;
-        }
-
-        ICommandSender sender = ManyKeyBinds.mc.thePlayer;
-
-        try {
-            CommandEvent event = new CommandEvent(icommand, sender, args);
-            if (MinecraftForge.EVENT_BUS.post(event)) {
-                if (event.exception != null)
-                {
-                    throw event.exception;
-                }
-                return;
-            }
-
-            icommand.processCommand(sender, args);
-        } catch (WrongUsageException wue) {
-            sender.addChatMessage(format(RED, "commands.generic.usage", format(RED, wue.getMessage(), wue.getErrorObjects())));
-        }
-        catch (CommandException ce)
-        {
-            sender.addChatMessage(format(RED, ce.getMessage(), ce.getErrorObjects()));
-        }
-        catch (Throwable t)
-        {
-            sender.addChatMessage(format(RED, "commands.generic.exception"));
-            t.printStackTrace();
-        }
+        ManyKeyBinds.mc.thePlayer.sendChatMessage("/" + command + " " + String.join(" ", args));
     }
 
     @Override
@@ -89,11 +45,5 @@ public final class CommandAction extends Action {
         }
 
         object.add("args", args);
-    }
-
-    private static ChatComponentTranslation format(EnumChatFormatting color, String str, Object... args) {
-        ChatComponentTranslation ret = new ChatComponentTranslation(str, args);
-        ret.getChatStyle().setColor(color);
-        return ret;
     }
 }
